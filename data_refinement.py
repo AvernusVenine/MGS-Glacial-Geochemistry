@@ -1,38 +1,47 @@
 import pandas as pd
-import arcpy
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.decomposition import PCA
+from imblearn.over_sampling import ADASYN
 
 import utils
 from utils import Field
 
-def load_data():
-    ix_numpy_array = arcpy.da.FeatureClassToNumPyArray(
-        f'{utils.SDE_CONN}\\{utils.QDI_IX_DATA_PATH}',
-        field_names=utils.IX_FIELDS,
-        skip_nulls=False,
-        null_value=0
-    )
-    ix_df = pd.DataFrame(data=ix_numpy_array)
-    ix_df = ix_df.drop_duplicates(subset=[Field.RELATEID])
+def perform_pca(df : pd.DataFrame):
+    df = df[utils.CHEMICAL_COLS]
 
-    tx_numpy_array = arcpy.da.FeatureClassToNumPyArray(
-        f'{utils.SDE_CONN}\\{utils.QDI_TX_DATA_PATH}',
-        field_names=utils.TX_FIELDS,
-        skip_nulls=False,
-        null_value=0
-    )
-    tx_df = pd.DataFrame(data=tx_numpy_array)
-
-    tx_df = tx_df.replace({'0' : None, '' : None})
-    tx_df = tx_df.dropna(subset=[Field.UNIT])
-
-    tx_df[Field.ELEVATION] = tx_df[Field.RELATEID].map(ix_df.set_index(Field.RELATEID)[Field.ELEVATION])
-    tx_df[Field.UTME] = tx_df[Field.RELATEID].map(ix_df.set_index(Field.RELATEID)[Field.UTME])
-    tx_df[Field.UTMN] = tx_df[Field.RELATEID].map(ix_df.set_index(Field.RELATEID)[Field.UTMN])
-
-    return tx_df
-
-def map_units(df : pd.DataFrame):
-
-
+    pca = PCA(n_components=3)
+    pca.fit
 
     pass
+
+def apply_smote(X : pd.DataFrame, y : pd.DataFrame):
+    adasyn = ADASYN(
+        sampling_strategy='not majority',
+        random_state=127,
+        n_neighbors=5,
+    )
+
+    X, y = adasyn.fit_resample(X, y)
+    return X, y
+
+def load_qdi_data():
+    df = pd.read_csv(utils.QDI_SAMPLE_PATH)
+    return df
+
+def load_geo_chem_data():
+    df = pd.read_csv(utils.GEO_CHEM_PATH)
+    return df
+
+def scale_df(df : pd.DataFrame, cols : list):
+    scaler = StandardScaler()
+    df[cols] = scaler.fit_transform(df[cols])
+
+    return df
+
+def label_encode_units(df : pd.DataFrame):
+    encoder = LabelEncoder()
+    encoder.fit_transform(df[Field.UNIT])
+
+    df[Field.UNIT] = encoder.transform(df[Field.UNIT])
+
+    return df, encoder
