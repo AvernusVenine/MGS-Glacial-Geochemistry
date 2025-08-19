@@ -9,7 +9,7 @@ import data_downloader
 
 def train_geo_chem():
     df = data_refinement.load_geo_chem_data()
-
+    old_df = df.copy()
     value_counts = df[Field.UNIT].value_counts()
 
     mask = value_counts[value_counts < 10].index
@@ -17,20 +17,16 @@ def train_geo_chem():
 
     df, encoder = data_refinement.label_encode_units(df)
 
-    # model = xgb_model_trainer.train_geo_chem_model_binary(df, encoder, ['QELU'])
-    model = xgb_model_trainer.train_geo_chem_model(df, encoder)
-    plot_importance(model, importance_type='weight')
+    model = xgb_model_trainer.train_geo_chem_model_binary(df, encoder, ['QINU'])
+    #model = xgb_model_trainer.train_geo_chem_model(df, encoder)
+    old_df = old_df.dropna()
+    data_refinement.show_pca_plot(old_df, xgb_model_trainer.get_unused_features(model), 'QBVU')
+
+    plot_importance(model, importance_type='gain')
     plt.show()
 
-df = data_refinement.load_geo_chem_data()
-df = df[utils.CHEMICAL_COLS]
+#train_geo_chem()
 
-cm = df.corr()
-
-plt.imshow(cm, cmap='coolwarm', interpolation='nearest')
-plt.colorbar()
-
-plt.xticks(range(len(cm)), cm.columns, rotation=45, ha='right')
-plt.yticks(range(len(cm)), cm.columns)
-plt.tight_layout()
-plt.show()
+df = data_refinement.load_geo_chem_data().dropna()
+data_refinement.show_pca_plot(df, utils.CHEMICAL_COLS, 'QINU')
+#data_refinement.show_3d_plot(df, [Field.TH_PPM, Field.MO_PPM, Field.BE_PPM], 'QBVU')

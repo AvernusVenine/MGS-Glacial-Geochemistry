@@ -1,18 +1,53 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from imblearn.over_sampling import ADASYN
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 import utils
 from utils import Field
 
-def perform_pca(df : pd.DataFrame):
-    df = df[utils.CHEMICAL_COLS]
+def show_correlation_matrix(df : pd.DataFrame):
+    cm = df.corr()
+
+    plt.imshow(cm, cmap='coolwarm', interpolation='nearest')
+    plt.colorbar()
+
+    plt.xticks(range(len(cm)), cm.columns, rotation=45, ha='right')
+    plt.yticks(range(len(cm)), cm.columns)
+    plt.tight_layout()
+    plt.show()
+
+def show_3d_plot(df : pd.DataFrame, cols : list, unit : str):
+    colors = df[Field.UNIT] == unit
+    colors = colors.map({True: 'blue', False: 'red'})
+    df = df[cols]
+
+    np_array = df.to_numpy()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+
+    ax.scatter3D(xs=np_array[:, 0], ys=np_array[:, 1], zs=np_array[:, 2], c=colors)
+
+    plt.show()
+
+def show_pca_plot(df : pd.DataFrame, cols : list, unit : str):
+    colors = df[Field.UNIT] == unit
+    colors = colors.map({True : 'blue', False : 'red'})
+    df = df[cols]
 
     pca = PCA(n_components=3)
-    pca.fit
+    pca_array = pca.fit_transform(df)
 
-    pass
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+
+    ax.scatter3D(xs=pca_array[:, 0], ys=pca_array[:, 1], zs=pca_array[:, 2], c=colors)
+
+    plt.show()
 
 def apply_smote(X : pd.DataFrame, y : pd.DataFrame):
     adasyn = ADASYN(

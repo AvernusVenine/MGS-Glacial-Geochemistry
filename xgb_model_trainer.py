@@ -124,6 +124,12 @@ def train_xgb_model(df : pd.DataFrame, encoder : LabelEncoder):
 
     return model
 
-def show_feature_importance(model : XGBClassifier):
-    plot_importance(model)
+def show_feature_importance(model : XGBClassifier, importance_type : str):
+    plot_importance(model, importance_type=importance_type)
     pyplot.show()
+
+def get_unused_features(model : XGBClassifier):
+    importance_score = model.get_booster().get_score(importance_type='weight')
+    unused_features = list(set(utils.CHEMICAL_COLS) - set(importance_score.keys()))
+
+    return unused_features
