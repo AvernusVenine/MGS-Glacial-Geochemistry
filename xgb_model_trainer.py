@@ -10,34 +10,66 @@ import data_refinement
 import utils
 from utils import Field
 
+def find_key_chemicals(units : list, trials : int, against : list = None):
+    df = data_refinement.load_geo_chem_data()
+
+    if against:
+        df = df[df[Field.INTERPRETATION].isin(against)]
+
+    df, encoder = data_refinement.label_encode_units(df, Field.INTERPRETATION)
+
+    chem_dict = {}
+
+    for _ in range(trials):
+        model = train_geo_chem_model_binary(df, encoder, units)
+
+        imp_df = pd.DataFrame(model.get_booster().get_score(importance_type='gain'), index=[0])
+        imp_df = imp_df.transpose()
+
+        imp_df = imp_df.sort_values(by=0).head(3)
+
+        for idx, row in imp_df.iterrows():
+
+            if str(idx) not in chem_dict.keys():
+                chem_dict[str(idx)] = 1
+            else:
+                chem_dict[str(idx)] += 1
+
+    sorted_dict = {}
+    for key in sorted(chem_dict, key=chem_dict.get):
+        sorted_dict[key] = chem_dict[key]
+
+    return sorted_dict
+
 # Trains a binary model based off of one or more units
 def train_geo_chem_model_binary(df : pd.DataFrame, encoder : LabelEncoder, units : list):
     units = encoder.transform(units)
 
-    y = df[Field.UNIT].tolist()
+    y = df[Field.INTERPRETATION].tolist()
     y = [i in units for i in y]
 
-    df = df.drop(columns=[Field.UNIT, Field.SAMPLE_NUM])
+    df = df.drop(columns=[Field.INTERPRETATION, Field.SAMPLE_NUM, Field.DEPTH])
 
     X_train, X_test, y_train, y_test = train_test_split(
         df, y,
         test_size=0.2,
-        random_state=127
+        #random_state=314
     )
 
     model = xgboost.XGBClassifier(
-        booster='dart',
-        n_estimators=40,
+        #booster='dart',
+        n_estimators=500,
         verbosity=0,
+        early_stopping_rounds=20,
 
-        rate_drop=.1,
-        normalize_type='forest',
-        sample_type='weighted',
+        #rate_drop=.1,
+        #normalize_type='forest',
+        #sample_type='weighted',
 
-        tree_method='hist',
+        #tree_method='hist',
     )
 
-    model.fit(X_train, y_train)
+    model.fit(X_train, y_train, eval_set=[(X_test, y_test)])
 
     y_pred = model.predict(X_test)
 

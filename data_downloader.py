@@ -58,22 +58,17 @@ def download_map_data(df : pd.DataFrame):
 
 # Converts the geo chem data found in an excel file into a readable csv
 def download_geo_chem_data(df : pd.DataFrame):
-    df = df.drop_duplicates(subset=[Field.SAMPLE_NUM])
-
     gc_df = pd.read_excel(
         utils.GEO_CHEM_EXCEL_PATH,
-        sheet_name='Total',
+        sheet_name='Sheet1',
         na_values=0,
         )
 
     gc_df = gc_df.replace({' ' : 0})
 
-    gc_df = gc_df[gc_df.columns.intersection(utils.CHEMICAL_COLS + [Field.SAMPLE_NUM])]
-    gc_df = gc_df[gc_df[Field.SAMPLE_NUM].isin(df[Field.SAMPLE_NUM])]
+    gc_df = gc_df.drop(columns=['Recvd Wt.'])
 
-    gc_df[Field.UNIT] = gc_df[Field.SAMPLE_NUM].map(df.set_index(Field.SAMPLE_NUM)[Field.UNIT])
-
-    gc_df[utils.CHEMICAL_COLS] = gc_df[utils.CHEMICAL_COLS].astype(float)
+    gc_df[utils.CHEMICAL_COLS + [Field.DEPTH]] = gc_df[utils.CHEMICAL_COLS + [Field.DEPTH]].astype(float)
 
     gc_df.to_csv(utils.GEO_CHEM_PATH, index=False)
 

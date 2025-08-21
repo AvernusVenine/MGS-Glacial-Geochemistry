@@ -31,6 +31,8 @@ class Field:
     SHAPE_XY = 'SHAPE@XY'
 
     SAMPLE_NUM = 'sample_num'
+    INTERPRETATION = 'interpretation'
+    DEPTH = 'depth'
 
     AG_PPM = 'Ag_ppm'
     AL_PERCENTAGE = 'Al_%'
@@ -81,11 +83,38 @@ class Field:
     ZN_PPM = 'Zn_ppm'
     ZR_PPM = 'Zr_ppm'
 
+FORMATION_MAP = {
+    'Heiberg' : 'New Ulm',
+    'Meyer Lake' : 'Lake Henry',
+    'Villard' : 'New Ulm',
+    'Sauk Centre' : 'Lake Henry',
+    'GT3' : 'Good Thunder',
+    'Independence, South Long Lake' : 'Independence',
+    'Mille Lacs' : 'Cromwell',
+    'Automba' : 'Cromwell',
+    'Emerald' : 'Cromwell',
+    'Cromwell, Mille Lacs, Automba or St. Croix ' : 'Cromwell',
+    'St. Croix' : 'Cromwell',
+    'Independence, proto Brainerd lobe' : 'Independence',
+    'Independence, Proto-Brainerd lobe' : 'Independence',
+    'GT1' : 'Good Thunder',
+    'GT2' : 'Good Thunder',
+    'GT4' : 'Good Thunder',
+    'GT5' : 'Good Thunder',
+    'Dovray' : 'New Ulm',
+    'Ivanhoe' : 'New Ulm',
+    'Moland' : 'New Ulm',
+    'Twin Cities' : 'New Ulm',
+    'Verdi' : 'New Ulm',
+    'Moose Lake' : 'Barnum',
+
+}
+
 SDE_CONN = 'PostgreSQL-134-mgs_qdi(mgsstaff).sde'
 QDI_TX_DATABASE_PATH = 'mgs_qdi.qdi.qdtx' # Table that contains info about layer contents
 QDI_IX_DATABASE_PATH = 'mgs_qdi.qdi.qdix' # Table that contains info about sample site
 QDI_MAP_PATH = 'data/glacial_map.lyr'
-GEO_CHEM_EXCEL_PATH = 'data/geochem.xlsx'
+GEO_CHEM_EXCEL_PATH = 'data/geochem_data.xlsx'
 
 QDI_SAMPLE_PATH = 'data/samples.csv'
 GEO_CHEM_PATH = 'data/geo_chem.csv'
