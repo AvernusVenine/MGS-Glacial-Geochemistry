@@ -1,10 +1,12 @@
 import xgboost
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report
 import pandas as pd
 from xgboost import XGBClassifier, plot_importance
 from matplotlib import pyplot
+import numpy as np
+import ray.tune as tune
 
 import data_refinement
 import utils
@@ -117,11 +119,49 @@ def train_geo_chem_model(df : pd.DataFrame, encoder : LabelEncoder):
 
     return model
 
-def train_xgb_model(df : pd.DataFrame, encoder : LabelEncoder):
-    print('TRAINING XGBCLASSIFIER MODEL')
-    y = df[[Field.UNIT]].copy()
+def hyperparameter_train_classifier(config):
+    df = data_refinement.load_qdi_data()
+    encoder = LabelEncoder()
 
-    df = df.drop(columns=[Field.UNIT, Field.RELATEID])
+    y = encoder.fit_transform(df[Field.UNIT])
+
+    df = df.drop(columns=[Field.UNIT, Field.RELATEID, Field.SAMPLE_NUM])
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        df, y,
+        test_size=0.2,
+        random_state=127
+    )
+
+    model = xgboost.XGBClassifier(
+        booster='dart',
+        verbosity=2,
+
+        n_estimators=config['n_estimators'],
+        max_depth=config['max_depth'],
+        normalize_type=config['normalize_type'],
+        sample_type=config['sample_type'],
+        learning_rate=config['learning_rate'],
+        subsample=config['subsample'],
+    )
+
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    y_test = encoder.inverse_transform(y_test)
+    y_pred = encoder.inverse_transform(y_pred)
+
+    tune.report({
+        'accuracy': accuracy_score(y_test, y_pred)
+    })
+
+def train_xgb_model(df : pd.DataFrame):
+    print('TRAINING XGBCLASSIFIER MODEL')
+    encoder = LabelEncoder()
+    y = encoder.fit_transform(df[Field.UNIT])
+
+    df = df.drop(columns=[Field.UNIT, Field.RELATEID, Field.SAMPLE_NUM])
 
     X_train, X_test, y_train, y_test = train_test_split(
         df, y,
@@ -134,25 +174,22 @@ def train_xgb_model(df : pd.DataFrame, encoder : LabelEncoder):
 
     model = xgboost.XGBClassifier(
         booster='dart',
-        n_estimators=100,
+        n_estimators=200,
         verbosity=2,
+        max_depth=6,
 
-        rate_drop = .1,
+        rate_drop = .10,
         normalize_type='forest',
         sample_type='weighted',
 
         tree_method='hist',
+        random_state=127,
     )
 
-    model.fit(X_train, y_train)
+    cv_scores = cross_val_score(model, df, y)
 
-    y_pred = model.predict(X_test)
-
-    y_test = encoder.inverse_transform(y_test)
-    y_pred = encoder.inverse_transform(y_pred)
-
-    print('Accuracy:', accuracy_score(y_test, y_pred))
-    print(classification_report(y_test, y_pred, zero_division=0))
+    print(f'Cross-Validation Scores: {cv_scores}')
+    print(f'Average Score: {np.mean(cv_scores)}')
 
     return model
 

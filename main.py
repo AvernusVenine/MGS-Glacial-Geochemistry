@@ -3,9 +3,13 @@ import pandas as pd
 from xgboost import plot_importance
 import matplotlib.pyplot as plt
 import data_refinement
+import data_visualizer
 import utils
 import xgb_model_trainer
 from data_refinement import Field
+import ray.tune as tune
+from ray.tune.search.optuna import OptunaSearch
+
 import data_downloader
 
 
@@ -33,33 +37,28 @@ def find_key_chemicals():
     print(set(utils.CHEMICAL_COLS) - set(key_chem))
 
     df = data_refinement.load_geo_chem_data()
-    data_refinement.show_lda_plot(df, key_chem.keys(), ['Heiberg', 'Villard', 'Ivanhoe', 'Moland', 'Twin Cities', 'Verdi', 'Dovray'])
+    data_visualizer.show_lda_plot(df, key_chem.keys(), ['Heiberg', 'Villard', 'Ivanhoe', 'Moland', 'Twin Cities', 'Verdi', 'Dovray'])
 
-#find_key_chemicals()
+def hyper_train():
+    config = {
 
-pd.option_context('display.max_rows', None,
-                       'display.max_columns', 48,
-                       'display.precision', 2,
-                       )
+    }
 
-df = data_refinement.load_geo_chem_data()
+    tuner = tune.Tuner(
+        xgb_model_trainer.hyperparameter_train_classifier,
+        tune_config=tune.TuneConfig(
+            mode='max',
+            metric='accuracy',
+            search_alg=OptunaSearch(),
+            num_samples=10,
+        ),
+        param_space=config
+    )
 
-df = df[df[Field.INTERPRETATION].isin(['Heiberg', 'Villard', 'Ivanhoe', 'Moland', 'Twin Cities', 'Verdi', 'Dovray'])]
+    results = tuner.fit()
 
-ivanhoe = df[df[Field.INTERPRETATION] == 'Ivanhoe']
-other = df[df[Field.INTERPRETATION] != 'Ivanhoe']
+    print(f'Best config: {results.get_best_result().config}')
 
-ivanhoe = ivanhoe[utils.CHEMICAL_COLS]
-other = other[utils.CHEMICAL_COLS]
+df = data_refinement.load_qdi_data()
 
-print(pd.DataFrame(data=[ivanhoe.mean(), ivanhoe.std()]))
-print(pd.DataFrame(data=[other.mean(), other.std()]))
-
-#df = df.replace(utils.FORMATION_MAP)
-#data_refinement.show_lda_plot(df, utils.CHEMICAL_COLS, ['Boundary Waters', 'Saum', 'Hewitt', 'Independence'], False)
-
-#data_refinement.show_pca_plot(df, utils.CHEMICAL_COLS, ['Heiberg', 'New Ulm'], True)
-#train_geo_chem()
-
-#data_refinement.show_correlation_matrix(df)
-#data_refinement.show_3d_plot(df, [Field.IN_PPM, Field.NB_PPM, Field.GA_PPM], 'Browerville')
+xgb_model_trainer.train_xgb_model(df)

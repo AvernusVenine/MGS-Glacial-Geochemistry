@@ -93,7 +93,7 @@ FORMATION_MAP = {
     'Mille Lacs' : 'Cromwell',
     'Automba' : 'Cromwell',
     'Emerald' : 'Cromwell',
-    'Cromwell, Mille Lacs, Automba or St. Croix ' : 'Cromwell',
+    'Cromwell, Mille Lacs, Automba or St. Croix' : 'Cromwell',
     'St. Croix' : 'Cromwell',
     'Independence, proto Brainerd lobe' : 'Independence',
     'Independence, Proto-Brainerd lobe' : 'Independence',
@@ -107,7 +107,10 @@ FORMATION_MAP = {
     'Twin Cities' : 'New Ulm',
     'Verdi' : 'New Ulm',
     'Moose Lake' : 'Barnum',
-
+    'Boundary Waters' : 'Boundary Waters',
+    'Browerville' : 'Browerville',
+    'Independence' : 'Independence',
+    'Hewitt' : 'Hewitt',
 }
 
 SDE_CONN = 'PostgreSQL-134-mgs_qdi(mgsstaff).sde'
