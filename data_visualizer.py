@@ -47,25 +47,51 @@ def show_lda_plot(df : pd.DataFrame, cols : list, units : list[str], units_only 
 
     plt.show()
 
-def show_correlation_matrix(df : pd.DataFrame):
+def show_correlation_matrix(df : pd.DataFrame, y_cols : list = None):
     df = df.drop(columns=[Field.INTERPRETATION, Field.SAMPLE_NUM, Field.DEPTH])
 
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
 
     cm = df.corr()
+    if y_cols:
+        cm = cm[y_cols]
+        cm = cm.transpose()
+
+    print(cm.shape)
 
     plt.imshow(cm, cmap='coolwarm', interpolation='nearest')
     plt.colorbar()
 
-    plt.xticks(range(len(cm)), cm.columns, rotation=45, ha='right')
-    plt.yticks(range(len(cm)), cm.columns)
+    plt.xticks(range(len(cm.columns)), cm.columns, rotation=45, ha='right')
+
+    if y_cols:
+        plt.yticks(range(len(y_cols)), y_cols)
+    else:
+        plt.yticks(range(len(cm)), cm.columns)
+
     plt.tight_layout()
     plt.show()
 
-def show_3d_plot(df : pd.DataFrame, cols : list, unit : str):
+def show_2d_plot(df : pd.DataFrame, cols : list):
+    df = df[cols]
+
+    np_array = df.to_numpy()
+
+    fig = plt.figure()
+    ax = fig.add_subplot()
+
+    ax.set_xlabel(cols[0])
+    ax.set_ylabel(cols[1])
+
+    ax.scatter(x=np_array[:, 0], y=np_array[:, 1])
+
+    plt.show()
+
+def show_3d_plot(df : pd.DataFrame, cols : list, unit : str = None):
     colors = df[Field.INTERPRETATION] == unit
-    colors = colors.map({True: 'blue', False: 'red'})
+    if unit:
+        colors = colors.map({True: 'blue', False: 'red'})
     df = df[cols]
 
     np_array = df.to_numpy()
@@ -77,7 +103,10 @@ def show_3d_plot(df : pd.DataFrame, cols : list, unit : str):
     ax.set_ylabel(cols[1])
     ax.set_zlabel(cols[2])
 
-    ax.scatter3D(xs=np_array[:, 0], ys=np_array[:, 1], zs=np_array[:, 2], c=colors)
+    if unit:
+        ax.scatter3D(xs=np_array[:, 0], ys=np_array[:, 1], zs=np_array[:, 2], c=colors)
+    else:
+        ax.scatter3D(xs=np_array[:, 0], ys=np_array[:, 1], zs=np_array[:, 2])
 
     plt.show()
 

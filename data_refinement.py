@@ -8,37 +8,43 @@ from imblearn.over_sampling import ADASYN
 import numpy as np
 from scipy import stats
 
+import data_visualizer
 import utils
 from utils import Field
 
-def hdbscan_clusters(df : pd.DataFrame, units : list[str]):
-    df['formation'] = df[Field.INTERPRETATION].map(utils.FORMATION_MAP)
-    df = df[df['formation'].isin(units)]
+def compare_lith_chem():
+    df = load_and_combine()
 
-    scaler = RobustScaler()
-    data = scaler.fit_transform(df[utils.CHEMICAL_COLS + [Field.DEPTH]])
+    data_visualizer.show_correlation_matrix(df, [Field.SAND_PERCENTAGE, Field.SILT_PERCENTAGE, Field.CLAY_PERCENTAGE,
+                                                 Field.CRYSTALLINE_PERCENTAGE, Field.CARBONATE_PERCENTAGE, Field.SHALE_PERCENTAGE,
+                                                 Field.PRECAMBRIAN_PERCENTAGE, Field.PALEOZOIC_PERCENTAGE, Field.CRETACEOUS_PERCENTAGE,
+                                                 Field.LIGHT_PERCENTAGE, Field.DARK_PERCENTAGE, Field.RED_PERCENTAGE])
+    #data_visualizer.show_2d_plot(df, [Field.SAND_PERCENTAGE, Field.NA_PERCENTAGE])
 
-    hdbscan = HDBSCAN(
-        min_cluster_size=4,
-        allow_single_cluster=True,
-    )
+def load_and_combine():
+    lith_df = load_qdi_data()
+    df = load_geo_chem_data()
 
-    df['predict'] = hdbscan.fit_predict(data)
+    lith_df = lith_df.drop_duplicates(subset=[Field.SAMPLE_NUM])
+    df = df.drop_duplicates(subset=[Field.SAMPLE_NUM])
 
-    pd.set_option('display.max_rows', None)
+    df[Field.SAND_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.SAND_PERCENTAGE])
+    df[Field.SILT_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.SILT_PERCENTAGE])
+    df[Field.CLAY_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.CLAY_PERCENTAGE])
 
-    print(df[['predict', Field.INTERPRETATION, Field.SAMPLE_NUM]])
-    print(df[['predict', Field.INTERPRETATION]].value_counts().reset_index())
+    df[Field.CRYSTALLINE_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.CRYSTALLINE_PERCENTAGE])
+    df[Field.CARBONATE_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.CARBONATE_PERCENTAGE])
+    df[Field.SHALE_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.SHALE_PERCENTAGE])
 
-def apply_smote(X : pd.DataFrame, y : pd.DataFrame):
-    adasyn = ADASYN(
-        sampling_strategy='not majority',
-        random_state=127,
-        n_neighbors=5,
-    )
+    df[Field.PRECAMBRIAN_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.PRECAMBRIAN_PERCENTAGE])
+    df[Field.PALEOZOIC_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.PALEOZOIC_PERCENTAGE])
+    df[Field.CRETACEOUS_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.CRETACEOUS_PERCENTAGE])
 
-    X, y = adasyn.fit_resample(X, y)
-    return X, y
+    df[Field.LIGHT_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.LIGHT_PERCENTAGE])
+    df[Field.DARK_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.DARK_PERCENTAGE])
+    df[Field.RED_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.RED_PERCENTAGE])
+
+    return df
 
 def load_qdi_data():
     df = pd.read_csv(utils.QDI_SAMPLE_PATH)

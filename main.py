@@ -10,7 +10,7 @@ from data_refinement import Field
 import ray.tune as tune
 from ray.tune.search.optuna import OptunaSearch
 
-import data_downloader
+import linear_regression
 
 
 def train_geo_chem():
@@ -41,7 +41,12 @@ def find_key_chemicals():
 
 def hyper_train():
     config = {
-
+        'n_estimators' : tune.randint(50, 500),
+        'max_depth' : tune.randint(4, 10),
+        'noramlize_type' : tune.choice(['tree', 'forest']),
+        'sample_type' : tune.choice(['uniform', 'weighted']),
+        'learning_rate' : tune.loguniform(1e-4, 1e-1),
+        'subsample' : tune.uniform(.5, 1.0)
     }
 
     tuner = tune.Tuner(
@@ -59,6 +64,4 @@ def hyper_train():
 
     print(f'Best config: {results.get_best_result().config}')
 
-df = data_refinement.load_qdi_data()
-
-xgb_model_trainer.train_xgb_model(df)
+data_refinement.compare_lith_chem()

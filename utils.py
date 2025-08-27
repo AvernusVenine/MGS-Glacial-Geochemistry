@@ -10,7 +10,7 @@ class Field:
 
     SAND_PERCENTAGE = 'sand_pct'
     SILT_PERCENTAGE = 'silt_pct'
-    ClAY_PERCENTAGE = 'clay_pct'
+    CLAY_PERCENTAGE = 'clay_pct'
 
     CRYSTALLINE_PERCENTAGE = 'crystalline_blk'
     CARBONATE_PERCENTAGE = 'carbonate_blk'
@@ -124,6 +124,21 @@ GEO_CHEM_PATH = 'data/geo_chem.csv'
 
 MIN_COUNT = 25
 
+LITHOLOGY_COLS = [
+    Field.SAND_PERCENTAGE,
+    Field.SILT_PERCENTAGE,
+    Field.CLAY_PERCENTAGE,
+    Field.CRYSTALLINE_PERCENTAGE,
+    Field.CARBONATE_PERCENTAGE,
+    Field.SHALE_PERCENTAGE,
+    Field.PRECAMBRIAN_PERCENTAGE,
+    Field.PALEOZOIC_PERCENTAGE,
+    Field.CRETACEOUS_PERCENTAGE,
+    Field.LIGHT_PERCENTAGE,
+    Field.DARK_PERCENTAGE,
+    Field.RED_PERCENTAGE,
+]
+
 CHEMICAL_COLS = [
     Field.AG_PPM,
     Field.AL_PERCENTAGE,
@@ -189,7 +204,7 @@ TX_FIELDS = [
     Field.SAMPLE_DEPTH,
     Field.SAND_PERCENTAGE,
     Field.SILT_PERCENTAGE,
-    Field.ClAY_PERCENTAGE,
+    Field.CLAY_PERCENTAGE,
     Field.CRYSTALLINE_PERCENTAGE,
     Field.CARBONATE_PERCENTAGE,
     Field.SHALE_PERCENTAGE,
