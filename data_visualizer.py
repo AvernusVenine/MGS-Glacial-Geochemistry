@@ -110,7 +110,7 @@ def show_3d_plot(df : pd.DataFrame, cols : list, unit : str = None):
 
     plt.show()
 
-def show_3d_depth_plot(df : pd.DataFrame, cols : list, units : list[str], units_only : bool = False):
+def show_3d_depth_plot(df : pd.DataFrame, cols : list, units : list[str], units_only : bool = False, depth_unit : str = Field.DEPTH):
     marker_list = ['o', 'v', 'P', '*', 'D', 'h', '8']
 
     df = df.dropna()
@@ -119,8 +119,8 @@ def show_3d_depth_plot(df : pd.DataFrame, cols : list, units : list[str], units_
         df = df[df[Field.INTERPRETATION].isin(units)]
         marker_list.append('s')
 
-    colors = df[Field.DEPTH]
-    norm = Normalize(vmin=df[Field.DEPTH].min(), vmax=df[Field.DEPTH].max())
+    colors = df[depth_unit]
+    norm = Normalize(vmin=df[depth_unit].min(), vmax=df[depth_unit].max())
     interp = df[Field.INTERPRETATION]
 
     df = df[cols]
@@ -136,12 +136,35 @@ def show_3d_depth_plot(df : pd.DataFrame, cols : list, units : list[str], units_
 
     idx = 0
     for unit in units:
-        mask = interp == unit
+        #mask = interp == unit
 
-        ax.scatter3D(xs=np_array[mask, 0], ys=np_array[mask, 1], zs=np_array[mask, 2], marker=marker_list[idx], c=colors[mask],
+        ax.scatter3D(xs=np_array[:, 0], ys=np_array[:, 1], zs=np_array[:, 2], marker=marker_list[idx], c=colors,
                      cmap='viridis', norm=norm, s=20)
 
         idx += 1
+
+    sm = ScalarMappable(norm=norm, cmap='viridis')
+    fig.colorbar(sm, ax=ax)
+    plt.show()
+
+def show_lith_pca_depth_plot(df : pd.DataFrame, cols : list, depth_unit : str = Field.DEPTH):
+    marker_list = ['o', 'v', 'P', '*', 'D', 'h']
+
+    df = df.dropna()
+
+    colors = df[depth_unit]
+    norm = Normalize(vmin=df[depth_unit].min(), vmax=df[depth_unit].max())
+
+    df = df[cols]
+
+    pca = PCA(n_components=3)
+    pca_array = pca.fit_transform(df[cols])
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+
+    ax.scatter3D(xs=pca_array[:, 0], ys=pca_array[:, 1], zs=pca_array[:, 2], marker=marker_list[0], c=colors,
+                 cmap='viridis', norm=norm, s=25)
 
     sm = ScalarMappable(norm=norm, cmap='viridis')
     fig.colorbar(sm, ax=ax)
@@ -256,4 +279,39 @@ def show_pca_plot(df : pd.DataFrame, cols : list, units : list[str], units_only 
 
     ax.scatter3D(xs=pca_array[:, 0], ys=pca_array[:, 1], zs=pca_array[:, 2], c=colors, s=20)
 
+    plt.show()
+
+def show_pca_biplot(df : pd.DataFrame, cols : list, unit : str = None):
+    if unit:
+        colors = df[Field.INTERPRETATION]
+        colors = colors.map({unit : 'purple'}, na_action='ignore')
+        colors = colors.fillna('blue')
+    else:
+        colors = 'blue'
+
+    X = df[cols]
+
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+
+    pca = PCA()
+    X = pca.fit_transform(X)
+
+    score = X[:, 0:2]
+
+    xs = score[:,0]
+    ys = score[:,1]
+
+    coef = np.transpose(pca.components_[0:2, :])
+    n = coef.shape[0]
+    scalex = 1.0 / (xs.max() - xs.min())
+    scaley = 1.0 / (ys.max() - ys.min())
+
+    plt.scatter(xs * scalex, ys * scaley, s=20, c=colors)
+
+    for idx in range(n):
+        plt.arrow(0, 0, coef[idx, 0], coef[idx, 1], color='r', alpha=.5)
+        plt.text(coef[idx, 0] * 1.15, coef[idx, 1] * 1.15, cols[idx], color='green', ha = 'center', va = 'center')
+
+    plt.grid()
     plt.show()

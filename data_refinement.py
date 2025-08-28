@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler, RobustScaler
 from sklearn.cluster import HDBSCAN, DBSCAN
@@ -12,14 +14,26 @@ import data_visualizer
 import utils
 from utils import Field
 
-def compare_lith_chem():
+def create_chemical_ratios():
     df = load_and_combine()
 
-    data_visualizer.show_correlation_matrix(df, [Field.SAND_PERCENTAGE, Field.SILT_PERCENTAGE, Field.CLAY_PERCENTAGE,
-                                                 Field.CRYSTALLINE_PERCENTAGE, Field.CARBONATE_PERCENTAGE, Field.SHALE_PERCENTAGE,
-                                                 Field.PRECAMBRIAN_PERCENTAGE, Field.PALEOZOIC_PERCENTAGE, Field.CRETACEOUS_PERCENTAGE,
-                                                 Field.LIGHT_PERCENTAGE, Field.DARK_PERCENTAGE, Field.RED_PERCENTAGE])
-    #data_visualizer.show_2d_plot(df, [Field.SAND_PERCENTAGE, Field.NA_PERCENTAGE])
+    ratio_set = []
+
+    for chem_one in utils.CHEMICAL_COLS:
+        for chem_two in utils.CHEMICAL_COLS:
+
+            if chem_one == chem_two or {chem_one, chem_two} in ratio_set:
+                continue
+
+            df[f'{chem_one} / {chem_two}'] = np.log(df[chem_one] / df[chem_two])
+            ratio_set.append({chem_one, chem_two})
+
+    df = df.replace({np.inf: None, -np.inf : None})
+    df.to_csv('data/chem_ratios.csv', index=False)
+
+def load_chemical_ratios():
+    df = pd.read_csv('data/chem_ratios.csv')
+    return df
 
 def load_and_combine():
     lith_df = load_qdi_data()

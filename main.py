@@ -64,4 +64,5 @@ def hyper_train():
 
     print(f'Best config: {results.get_best_result().config}')
 
-data_refinement.compare_lith_chem()
+df = data_refinement.load_geo_chem_data()
+data_visualizer.show_pca_biplot(df, utils.CHEMICAL_COLS, 'Heiberg')
