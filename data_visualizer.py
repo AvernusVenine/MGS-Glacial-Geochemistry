@@ -281,13 +281,13 @@ def show_pca_plot(df : pd.DataFrame, cols : list, units : list[str], units_only 
 
     plt.show()
 
-def show_pca_biplot(df : pd.DataFrame, cols : list, unit : str = None):
+def show_pca_biplot(df : pd.DataFrame, cols : list, unit : str = None, ax_one : int = 0, ax_two : int = 1):
     if unit:
         colors = df[Field.INTERPRETATION]
         colors = colors.map({unit : 'purple'}, na_action='ignore')
         colors = colors.fillna('blue')
     else:
-        colors = 'blue'
+        colors = 'red'
 
     X = df[cols]
 
@@ -297,21 +297,24 @@ def show_pca_biplot(df : pd.DataFrame, cols : list, unit : str = None):
     pca = PCA()
     X = pca.fit_transform(X)
 
-    score = X[:, 0:2]
+    score = X[:, 0:3]
 
-    xs = score[:,0]
-    ys = score[:,1]
+    xs = score[:,1]
+    ys = score[:,2]
 
-    coef = np.transpose(pca.components_[0:2, :])
+    coef = np.transpose(pca.components_[0:3, :])
     n = coef.shape[0]
     scalex = 1.0 / (xs.max() - xs.min())
     scaley = 1.0 / (ys.max() - ys.min())
 
-    plt.scatter(xs * scalex, ys * scaley, s=20, c=colors)
+    plt.scatter(xs * scalex, ys * scaley, s=12, c=colors, alpha=.5)
 
     for idx in range(n):
-        plt.arrow(0, 0, coef[idx, 0], coef[idx, 1], color='r', alpha=.5)
-        plt.text(coef[idx, 0] * 1.15, coef[idx, 1] * 1.15, cols[idx], color='green', ha = 'center', va = 'center')
+        plt.arrow(0, 0, coef[idx, 1], coef[idx, 2], color='r')
+        plt.text(coef[idx, 1] * 1.15, coef[idx, 2] * 1.15, cols[idx], color='black', ha = 'center', va = 'center', fontsize=15)
+
+    plt.xlabel('PCA 2')
+    plt.ylabel('PCA 3')
 
     plt.grid()
     plt.show()

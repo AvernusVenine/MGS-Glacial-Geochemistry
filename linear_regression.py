@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler, Normalizer
@@ -147,8 +149,6 @@ def find_all_partial_r2():
     score_df = pd.DataFrame(columns=['Lithology', 'Total'] + list(partial_df.columns))
 
     for lith in utils.LITHOLOGY_COLS:
-        lith = Field.CARBONATE_PERCENTAGE
-        print(lith)
 
         score_dict = {}
 
@@ -198,50 +198,20 @@ def chemical_pca_analysis():
     pca = PCA()
     pca.fit(df)
 
-    pca_df = pd.DataFrame(columns=['PCA'] + utils.CHEMICAL_COLS)
-
-
-    for comp in range(20):
-        pca_dict = {}
-        for idx in range(len(pca.components_[comp])):
-            pca_dict['PCA'] = comp + 1
-            pca_dict[utils.CHEMICAL_COLS[idx]] = pca.components_[comp][idx]
-
-        sorted_dict_desc = dict(sorted(pca_dict.items(), key=lambda item: item[1], reverse=True))
-        print(sorted_dict_desc)
-        print(pca.explained_variance_ratio_[comp])
-        pca_df.loc[len(pca_df)] = pca_dict
-
-    cov_df = pd.DataFrame(pca.get_covariance(), columns=utils.CHEMICAL_COLS, index=utils.CHEMICAL_COLS)
-    cov_df = cov_df.round(4)
-
-    cov_df.to_csv('data/chemical_covariance.csv')
-    pca_df.to_csv('data/chemical_pca.csv', index=False)
-
-def ratio_pca_analysis():
-    df = data_refinement.load_chemical_ratios()
-    df = df.drop(columns=[Field.SAMPLE_NUM, Field.INTERPRETATION, Field.DEPTH] + utils.LITHOLOGY_COLS + utils.CHEMICAL_COLS)
-    df = df.dropna()
-
-    pca = PCA()
-    pca.fit(df)
-
-    pca_df = pd.DataFrame(columns=['PCA'] + list(df.columns))
+    pca_df = pd.DataFrame(columns=['PCA', 'Variance'] + utils.CHEMICAL_COLS)
 
     for comp in range(20):
         pca_dict = {}
         for idx in range(len(pca.components_[comp])):
             pca_dict['PCA'] = comp + 1
-            pca_dict[list(df.columns)[idx]] = pca.components_[comp][idx]
+            pca_dict['Variance'] = round(pca.explained_variance_ratio_[comp], 6) * 100
+            pca_dict[utils.CHEMICAL_COLS[idx]] = round(abs(pca.components_[comp][idx]), 4)
 
-        sorted_dict_desc = dict(sorted(pca_dict.items(), key=lambda item: item[1], reverse=True))
-        print(sorted_dict_desc)
-        print(pca.explained_variance_ratio_[comp])
         pca_df.loc[len(pca_df)] = pca_dict
 
-    print(pca.get_covariance())
+    pca_df = pca_df.transpose()
 
-    pca_df.to_csv('data/ratio_pca.csv', index=False)
+    pca_df.to_csv('data/chemical_pca.csv')
 
 def load_data(positive : bool = False):
     if positive:
@@ -254,3 +224,5 @@ def load_data(positive : bool = False):
         p_df = pd.read_csv('data/linear_regression/p_values.csv')
 
         return coef_df, p_df
+
+chemical_pca_analysis()
