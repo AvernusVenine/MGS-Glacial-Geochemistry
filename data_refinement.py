@@ -49,14 +49,17 @@ def load_and_combine():
     df[Field.CRYSTALLINE_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.CRYSTALLINE_PERCENTAGE])
     df[Field.CARBONATE_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.CARBONATE_PERCENTAGE])
     df[Field.SHALE_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.SHALE_PERCENTAGE])
+    df[Field.GRAY_SHALE_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.GRAY_SHALE_PERCENTAGE])
 
     df[Field.PRECAMBRIAN_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.PRECAMBRIAN_PERCENTAGE])
     df[Field.PALEOZOIC_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.PALEOZOIC_PERCENTAGE])
     df[Field.CRETACEOUS_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.CRETACEOUS_PERCENTAGE])
+    df[Field.LIMESTONE_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.LIMESTONE_PERCENTAGE])
 
     df[Field.LIGHT_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.LIGHT_PERCENTAGE])
     df[Field.DARK_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.DARK_PERCENTAGE])
     df[Field.RED_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.RED_PERCENTAGE])
+    df[Field.CLEAR_PERCENTAGE] = df[Field.SAMPLE_NUM].map(lith_df.set_index(Field.SAMPLE_NUM)[Field.CLEAR_PERCENTAGE])
 
     return df
 

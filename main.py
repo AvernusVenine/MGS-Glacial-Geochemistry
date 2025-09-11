@@ -65,4 +65,4 @@ def hyper_train():
     print(f'Best config: {results.get_best_result().config}')
 
 df = data_refinement.load_geo_chem_data()
-data_visualizer.show_pca_biplot(df, utils.CHEMICAL_COLS)
+data_visualizer.show_lda_biplot(df, utils.CHEMICAL_COLS)

@@ -318,3 +318,42 @@ def show_pca_biplot(df : pd.DataFrame, cols : list, unit : str = None, ax_one : 
 
     plt.grid()
     plt.show()
+
+def show_lda_biplot(df : pd.DataFrame, cols : list, unit : str = None, ax_one : int = 0, ax_two : int = 1):
+    if unit:
+        colors = df[Field.INTERPRETATION]
+        colors = colors.map({unit : 'purple'}, na_action='ignore')
+        colors = colors.fillna('blue')
+    else:
+        colors = 'red'
+
+    y = df[Field.INTERPRETATION]
+    X = df[cols]
+
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+
+    lda = LinearDiscriminantAnalysis()
+    X = lda.fit_transform(X, y)
+
+    score = X[:, 0:4]
+
+    xs = score[:,2]
+    ys = score[:,3]
+
+    coef = np.transpose(lda.scalings_[0:4, :])
+    n = coef.shape[0]
+    scalex = 1.0 / (xs.max() - xs.min())
+    scaley = 1.0 / (ys.max() - ys.min())
+
+    plt.scatter(xs * scalex, ys * scaley, s=12, c=colors, alpha=.5)
+
+    for idx in range(n):
+        plt.arrow(0, 0, coef[idx, 2] * .5, coef[idx, 3] * .5, color='blue')
+        plt.text(coef[idx, 2] * .55, coef[idx, 3] * .55, cols[idx], color='black', ha = 'center', va = 'center', fontsize=15)
+
+    plt.xlabel('LDA 3')
+    plt.ylabel('LDA 4')
+
+    plt.grid()
+    plt.show()

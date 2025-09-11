@@ -38,8 +38,7 @@ def download_qdi_data():
     mask = value_counts[value_counts < utils.MIN_COUNT].index
     tx_df.loc[tx_df[Field.UNIT].isin(mask), Field.UNIT] = 'Undifferentiated'
 
-    tx_df = data_refinement.scale_df(tx_df, utils.SCALED_COLS)
-    #tx_df = download_map_data(tx_df)
+    #tx_df = data_refinement.scale_df(tx_df, utils.SCALED_COLS)
 
     tx_df.to_csv(utils.QDI_SAMPLE_PATH, index=False)
 
@@ -83,5 +82,4 @@ def get_data_value_counts():
 
     print(tx_df[Field.UNIT].value_counts())
 
-df = data_refinement.load_qdi_data()
-download_geo_chem_data(df)
+download_qdi_data()

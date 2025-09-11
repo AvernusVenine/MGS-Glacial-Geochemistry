@@ -111,6 +111,12 @@ FORMATION_MAP = {
     'Browerville' : 'Browerville',
     'Independence' : 'Independence',
     'Hewitt' : 'Hewitt',
+    'St. Francis' : 'St. Francis',
+    'St, Francis, Upper' : 'St. Francis',
+    'St. Francis, Lower' : 'St. Francis',
+    'Alborn' : 'Aitkin',
+    'Nelson Lake' : 'Aitkin',
+    'Prairie Lake' : 'Aitkin',
 }
 
 SDE_CONN = 'PostgreSQL-134-mgs_qdi(mgsstaff).sde'
